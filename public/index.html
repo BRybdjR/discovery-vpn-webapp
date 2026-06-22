@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="ru" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Premium VPN</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Telegram WebApp API -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dark: '#0f172a', // Slate 900
+                        darker: '#020617', // Slate 950
+                        primary: '#10b981', // Emerald 500 for success/neon
+                        primaryHover: '#059669', // Emerald 600
+                        accent: '#3b82f6', // Blue 500
+                    },
+                    boxShadow: {
+                        'neon': '0 0 15px rgba(16, 185, 129, 0.5)',
+                        'neon-blue': '0 0 15px rgba(59, 130, 246, 0.5)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #020617; /* Matches darker color */
+            color: #f8fafc; /* Slate 50 */
+            -webkit-tap-highlight-color: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            padding-bottom: 80px; /* Space for bottom nav */
+        }
+
+        /* Hide scrollbar for smooth UI */
+        ::-webkit-scrollbar {
+            display: none;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Pulse animation for shield */
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 15px rgba(16, 185, 129, 0.5); }
+            50% { box-shadow: 0 0 30px rgba(16, 185, 129, 0.8); }
+        }
+        .animate-pulse-glow {
+            animation: pulse-glow 2s infinite;
+        }
+    </style>
+</head>
+<body class="bg-darker text-slate-50 antialiased selection:bg-primary selection:text-white">
+
+    <!-- Header -->
+    <header class="fixed top-0 left-0 right-0 z-50 bg-dark/80 backdrop-blur-md border-b border-slate-800 p-4 flex justify-between items-center">
+        <h1 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent" data-i18n="app_title">VPN</h1>
+
+        <!-- Language Toggle -->
+        <button id="langToggle" class="flex items-center space-x-1 bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-full transition-colors text-sm font-medium">
+            <span id="langIndicator">🇷🇺 RU</span>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+            </svg>
+        </button>
+    </header>
+
+    <!-- Main Content Container -->
+    <main id="app" class="pt-20 px-4 pb-24">
+        <!-- MAIN TAB -->
+        <section id="tab-main" class="tab-content active space-y-6">
+            <!-- Glowing Shield -->
+            <div class="flex flex-col items-center justify-center py-8">
+                <div class="w-32 h-32 rounded-full bg-dark flex items-center justify-center border-2 border-primary shadow-neon animate-pulse-glow mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                </div>
+                <h2 class="text-2xl font-bold tracking-wider text-primary drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]" data-i18n="protection_on">ЗАЩИТА ВКЛЮЧЕНА</h2>
+                <p class="text-slate-400 mt-2 text-sm" data-i18n="ip_hidden">Ваш IP скрыт, трафик зашифрован</p>
+            </div>
+
+            <!-- Live Widget -->
+            <div class="bg-dark border border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-lg">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M2 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V5zm3.293 1.293a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 01-1.414-1.414L7.586 10 5.293 7.707a1 1 0 010-1.414zM11 12a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-sm text-slate-400" data-i18n="network_status">Сеть: Стабильна</p>
+                        <p class="font-semibold text-white">25 <span class="text-xs text-slate-400">Гбит/с</span></p>
+                    </div>
+                </div>
+                <div class="flex space-x-1">
+                    <div class="w-1.5 h-4 bg-primary rounded-full animate-[bounce_1s_infinite_0.1s]"></div>
+                    <div class="w-1.5 h-6 bg-primary rounded-full animate-[bounce_1s_infinite_0.2s]"></div>
+                    <div class="w-1.5 h-3 bg-primary rounded-full animate-[bounce_1s_infinite_0.3s]"></div>
+                </div>
+            </div>
+
+            <!-- Copy Key Card -->
+            <button id="copyKeyBtn" class="w-full group relative overflow-hidden bg-gradient-to-br from-slate-800 to-dark border border-slate-700 rounded-2xl p-4 text-left transition-all hover:border-primary/50 hover:shadow-neon-blue">
+                <div class="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div class="relative z-10 flex justify-between items-center">
+                    <div>
+                        <h3 class="text-lg font-bold text-white mb-1" data-i18n="copy_active_key">Скопировать активный ключ</h3>
+                        <p class="text-xs text-slate-400 font-mono truncate max-w-[200px]">vless://a1b2c3d4... Premium Node</p>
+                    </div>
+                    <div class="bg-primary/20 p-2 rounded-lg text-primary group-hover:bg-primary group-hover:text-dark transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                    </div>
+                </div>
+            </button>
+
+            <!-- Quick Actions -->
+            <div class="grid grid-cols-2 gap-4">
+                <button class="bg-dark border border-slate-800 rounded-2xl p-4 flex flex-col items-center justify-center space-y-2 hover:bg-slate-800 transition-colors">
+                    <div class="bg-accent/20 p-2 rounded-full text-accent">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                    </div>
+                    <span class="text-sm font-medium" data-i18n="top_up_balance">Пополнить баланс</span>
+                </button>
+                <button class="bg-dark border border-slate-800 rounded-2xl p-4 flex flex-col items-center justify-center space-y-2 hover:bg-slate-800 transition-colors">
+                    <div class="bg-purple-500/20 p-2 rounded-full text-purple-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                    </div>
+                    <span class="text-sm font-medium" data-i18n="add_device">Добавить устройство</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- STORE TAB -->
+        <section id="tab-store" class="tab-content space-y-6">
+            <h2 class="text-2xl font-bold text-white mb-4" data-i18n="tariffs">Тарифы</h2>
+
+            <!-- Category Filter -->
+            <div class="flex space-x-2 overflow-x-auto pb-2">
+                <button class="bg-primary text-dark px-4 py-1.5 rounded-full text-sm font-bold whitespace-nowrap">VLESS</button>
+                <button class="bg-dark border border-slate-700 text-slate-300 px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap hover:bg-slate-800">WireGuard</button>
+                <button class="bg-dark border border-slate-700 text-slate-300 px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap hover:bg-slate-800">ShadowSocks</button>
+            </div>
+
+            <!-- Tariffs List -->
+            <div class="space-y-4">
+                <!-- Tariff Card 1 -->
+                <div class="bg-gradient-to-b from-slate-800 to-dark border border-slate-700 rounded-2xl p-4 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 bg-primary text-dark text-xs font-bold px-3 py-1 rounded-bl-xl" data-i18n="hit">ХИТ</div>
+                    <h3 class="text-xl font-bold text-white mb-1" data-i18n="month_1">1 Месяц</h3>
+                    <div class="flex items-end space-x-1 mb-4">
+                        <span class="text-3xl font-bold text-primary">149 ₽</span>
+                        <span class="text-slate-400 text-sm mb-1" data-i18n="per_month">/ мес</span>
+                    </div>
+
+                    <div class="flex items-center space-x-2 mb-4 text-sm text-slate-300">
+                        <span class="text-xl" title="Germany">🇩🇪</span>
+                        <span class="text-xl" title="USA">🇺🇸</span>
+                        <span class="text-xl" title="Finland">🇫🇮</span>
+                        <span class="text-slate-500 ml-2" data-i18n="locations_count">+ 5 локаций</span>
+                    </div>
+
+                    <button class="w-full bg-primary hover:bg-primaryHover text-dark font-bold py-3 rounded-xl transition-colors btn-buy" data-price="149" data-i18n="choose">Выбрать</button>
+                </div>
+
+                <!-- Tariff Card 2 -->
+                <div class="bg-gradient-to-b from-slate-800 to-dark border border-slate-700 rounded-2xl p-4 relative overflow-hidden">
+                    <h3 class="text-xl font-bold text-white mb-1" data-i18n="months_6">6 Месяцев</h3>
+                    <div class="flex items-end space-x-1 mb-4">
+                        <span class="text-3xl font-bold text-primary">799 ₽</span>
+                        <span class="text-slate-400 text-sm mb-1" data-i18n="per_month">/ мес</span>
+                    </div>
+
+                    <div class="flex items-center space-x-2 mb-4 text-sm text-slate-300">
+                        <span class="text-xl" title="Germany">🇩🇪</span>
+                        <span class="text-xl" title="USA">🇺🇸</span>
+                        <span class="text-xl" title="Finland">🇫🇮</span>
+                        <span class="text-slate-500 ml-2" data-i18n="locations_count">+ 5 локаций</span>
+                    </div>
+
+                    <button class="w-full bg-dark border border-primary text-primary hover:bg-primary/10 font-bold py-3 rounded-xl transition-colors btn-buy" data-price="799" data-i18n="choose">Выбрать</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- PROFILE TAB -->
+        <section id="tab-profile" class="tab-content space-y-6">
+            <!-- Header -->
+            <div class="flex items-center space-x-4">
+                <div class="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center border-2 border-primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold text-white">User #12345</h2>
+                    <p class="text-sm text-primary font-medium" data-i18n="account_active">Аккаунт активен</p>
+                </div>
+            </div>
+
+            <!-- Balances -->
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-dark border border-slate-800 rounded-2xl p-4">
+                    <p class="text-slate-400 text-xs mb-1" data-i18n="main_balance">Основной баланс</p>
+                    <p class="text-xl font-bold text-white">0 ₽</p>
+                </div>
+                <div class="bg-dark border border-slate-800 rounded-2xl p-4">
+                    <p class="text-slate-400 text-xs mb-1" data-i18n="bonuses">Бонусы</p>
+                    <p class="text-xl font-bold text-accent">50 🌟</p>
+                </div>
+            </div>
+
+            <!-- Sections -->
+            <div class="space-y-3">
+                <!-- Subscriptions -->
+                <details class="group bg-dark border border-slate-800 rounded-2xl overflow-hidden [&_summary::-webkit-details-marker]:hidden">
+                    <summary class="flex justify-between items-center font-bold cursor-pointer p-4 list-none text-white">
+                        <div class="flex items-center space-x-3">
+                            <span class="text-xl">🛡️</span>
+                            <span data-i18n="my_subscriptions">Мои подписки</span>
+                        </div>
+                        <span class="transition group-open:rotate-180">
+                            <svg fill="none" height="24" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
+                        </span>
+                    </summary>
+                    <div class="text-slate-400 p-4 pt-0 text-sm border-t border-slate-800">
+                        <div class="flex justify-between items-center bg-slate-800/50 p-3 rounded-xl">
+                            <div>
+                                <p class="text-white font-medium">Premium VLESS</p>
+                                <p class="text-xs" data-i18n="valid_until_july">До 15 июля 2026</p>
+                            </div>
+                            <span class="px-2 py-1 bg-primary/20 text-primary rounded text-xs font-bold" data-i18n="active">Активна</span>
+                        </div>
+                    </div>
+                </details>
+
+                <!-- Referral -->
+                <details class="group bg-dark border border-slate-800 rounded-2xl overflow-hidden [&_summary::-webkit-details-marker]:hidden">
+                    <summary class="flex justify-between items-center font-bold cursor-pointer p-4 list-none text-white">
+                        <div class="flex items-center space-x-3">
+                            <span class="text-xl">🤝</span>
+                            <span data-i18n="referral_program">Реферальная программа</span>
+                        </div>
+                        <span class="transition group-open:rotate-180">
+                            <svg fill="none" height="24" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
+                        </span>
+                    </summary>
+                    <div class="text-slate-400 p-4 pt-0 text-sm border-t border-slate-800 space-y-4">
+                        <p data-i18n="ref_desc">Приглашайте друзей и получайте 15% с их пополнений на бонусный счет.</p>
+                        <button id="copyRefBtn" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-medium py-3 rounded-xl transition-colors flex items-center justify-center space-x-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                            </svg>
+                            <span data-i18n="copy_link">Копировать ссылку</span>
+                        </button>
+                    </div>
+                </details>
+
+                <!-- Promocode -->
+                <div class="bg-dark border border-slate-800 rounded-2xl p-4 flex items-center space-x-3">
+                    <span class="text-xl">🎁</span>
+                    <input type="text" placeholder="Промокод" data-i18n-placeholder="promocode" class="bg-transparent border-none outline-none text-white w-full placeholder-slate-500 font-medium">
+                    <button class="bg-primary/20 text-primary px-3 py-1.5 rounded-lg text-sm font-bold hover:bg-primary/30 transition-colors" data-i18n="apply">Ок</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SUPPORT TAB -->
+        <section id="tab-support" class="tab-content space-y-6">
+            <h2 class="text-2xl font-bold text-white mb-4" data-i18n="support">Поддержка</h2>
+
+            <div class="space-y-3">
+                <details class="group bg-dark border border-slate-800 rounded-2xl overflow-hidden [&_summary::-webkit-details-marker]:hidden">
+                    <summary class="flex justify-between items-center font-bold cursor-pointer p-4 list-none text-white">
+                        <span data-i18n="faq_1">Как настроить VPN?</span>
+                        <span class="transition group-open:rotate-180">
+                            <svg fill="none" height="24" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
+                        </span>
+                    </summary>
+                    <div class="text-slate-400 p-4 pt-0 text-sm border-t border-slate-800" data-i18n="faq_1_ans">
+                        Скопируйте активный ключ на главной странице и вставьте его в приложение V2Ray, Shadowrocket или другое поддерживаемое приложение.
+                    </div>
+                </details>
+
+                <details class="group bg-dark border border-slate-800 rounded-2xl overflow-hidden [&_summary::-webkit-details-marker]:hidden">
+                    <summary class="flex justify-between items-center font-bold cursor-pointer p-4 list-none text-white">
+                        <span data-i18n="faq_2">Не работает интернет</span>
+                        <span class="transition group-open:rotate-180">
+                            <svg fill="none" height="24" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
+                        </span>
+                    </summary>
+                    <div class="text-slate-400 p-4 pt-0 text-sm border-t border-slate-800" data-i18n="faq_2_ans">
+                        Попробуйте обновить подписку в приложении клиента или сменить локацию.
+                    </div>
+                </details>
+            </div>
+
+            <button class="w-full bg-accent hover:bg-blue-600 text-white font-bold py-4 rounded-xl transition-colors mt-8 shadow-neon-blue flex items-center justify-center space-x-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+                <span data-i18n="open_support_chat">Открыть чат поддержки</span>
+            </button>
+        </section>
+
+    </main>
+
+    <!-- Bottom Sheet (Payment) -->
+    <div id="paymentSheet" class="fixed inset-0 z-50 flex items-end justify-center pointer-events-none">
+        <div class="absolute inset-0 bg-black/60 opacity-0 transition-opacity duration-300" id="paymentOverlay"></div>
+        <div class="bg-darker border-t border-slate-800 w-full rounded-t-3xl p-6 transform translate-y-full transition-transform duration-300 ease-out pointer-events-auto shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
+            <div class="w-12 h-1.5 bg-slate-700 rounded-full mx-auto mb-6"></div>
+            <h3 class="text-xl font-bold text-white mb-6 text-center" data-i18n="select_payment_method">Выберите способ оплаты</h3>
+
+            <div class="space-y-3">
+                <button class="w-full flex items-center p-4 bg-slate-800 hover:bg-slate-700 rounded-2xl transition-colors border border-slate-700">
+                    <div class="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center mr-4">
+                        <span class="text-xl">💳</span>
+                    </div>
+                    <div class="text-left">
+                        <div class="font-bold text-white" data-i18n="card_sbp">СБП / Карты РФ</div>
+                        <div class="text-xs text-slate-400" data-i18n="instant_payment">Моментальное зачисление</div>
+                    </div>
+                </button>
+
+                <button class="w-full flex items-center p-4 bg-slate-800 hover:bg-slate-700 rounded-2xl transition-colors border border-slate-700">
+                    <div class="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center mr-4">
+                        <span class="text-xl">₿</span>
+                    </div>
+                    <div class="text-left">
+                        <div class="font-bold text-white">CryptoPay</div>
+                        <div class="text-xs text-slate-400" data-i18n="crypto_payment">USDT, TON, BTC</div>
+                    </div>
+                </button>
+            </div>
+
+            <button id="closePaymentBtn" class="mt-6 w-full py-3 text-slate-400 font-medium hover:text-white transition-colors" data-i18n="cancel">Отмена</button>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-dark/90 backdrop-blur-lg border-t border-slate-800 pb-safe pt-2 px-6 z-40">
+        <div class="flex justify-between items-center mb-2">
+            <!-- Nav Item: Main -->
+            <button class="nav-btn active flex flex-col items-center p-2 text-primary transition-colors" data-target="tab-main">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                <span class="text-[10px] font-medium" data-i18n="nav_main">Главная</span>
+            </button>
+
+            <!-- Nav Item: Store -->
+            <button class="nav-btn flex flex-col items-center p-2 text-slate-500 hover:text-slate-300 transition-colors" data-target="tab-store">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <span class="text-[10px] font-medium" data-i18n="nav_store">Тарифы</span>
+            </button>
+
+            <!-- Nav Item: Profile -->
+            <button class="nav-btn flex flex-col items-center p-2 text-slate-500 hover:text-slate-300 transition-colors" data-target="tab-profile">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                <span class="text-[10px] font-medium" data-i18n="nav_profile">Профиль</span>
+            </button>
+
+            <!-- Nav Item: Support -->
+            <button class="nav-btn flex flex-col items-center p-2 text-slate-500 hover:text-slate-300 transition-colors" data-target="tab-support">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                <span class="text-[10px] font-medium" data-i18n="nav_support">Помощь</span>
+            </button>
+        </div>
+    </nav>
+
+    <script>
+        // --- Telegram WebApp Initialization ---
+        const tg = window.Telegram.WebApp;
+        tg.expand(); // Expand to full screen
+        tg.ready();
+
+        // Ensure theme matches TG (though we force dark in HTML class as fallback)
+        if (tg.colorScheme === 'light') {
+            // Optional: Handle light mode if needed, but requirements state "dark mode by default"
+            // document.documentElement.classList.remove('dark');
+        }
+
+        // Helper for haptic feedback
+        const triggerHaptic = (style = 'medium') => {
+            if (tg.HapticFeedback) {
+                tg.HapticFeedback.impactOccurred(style);
+            }
+        };
+
+        const triggerHapticSuccess = () => {
+            if (tg.HapticFeedback) {
+                tg.HapticFeedback.notificationOccurred('success');
+            }
+        };
+
+        // --- Multi-Language Logic ---
+        let currentLang = 'ru';
+
+        const dictionary = {
+            ru: {
+                app_title: "VPN",
+                protection_on: "ЗАЩИТА ВКЛЮЧЕНА",
+                ip_hidden: "Ваш IP скрыт, трафик зашифрован",
+                network_status: "Сеть: Стабильна",
+                copy_active_key: "Скопировать активный ключ",
+                top_up_balance: "Пополнить баланс",
+                add_device: "Добавить устройство",
+                tariffs: "Тарифы",
+                hit: "ХИТ",
+                month_1: "1 Месяц",
+                per_month: "/ мес",
+                locations_count: "+ 5 локаций",
+                choose: "Выбрать",
+                months_6: "6 Месяцев",
+                select_payment_method: "Выберите способ оплаты",
+                card_sbp: "СБП / Карты РФ",
+                instant_payment: "Моментальное зачисление",
+                crypto_payment: "USDT, TON, BTC",
+                cancel: "Отмена",
+                account_active: "Аккаунт активен",
+                main_balance: "Основной баланс",
+                bonuses: "Бонусы",
+                my_subscriptions: "Мои подписки",
+                valid_until_july: "До 15 июля 2026",
+                active: "Активна",
+                referral_program: "Реферальная программа",
+                ref_desc: "Приглашайте друзей и получайте 15% с их пополнений на бонусный счет.",
+                copy_link: "Копировать ссылку",
+                promocode: "Промокод",
+                apply: "Ок",
+                support: "Поддержка",
+                faq_1: "Как настроить VPN?",
+                faq_1_ans: "Скопируйте активный ключ на главной странице и вставьте его в приложение V2Ray, Shadowrocket или другое поддерживаемое приложение.",
+                faq_2: "Не работает интернет",
+                faq_2_ans: "Попробуйте обновить подписку в приложении клиента или сменить локацию.",
+                open_support_chat: "Открыть чат поддержки",
+                nav_main: "Главная",
+                nav_store: "Тарифы",
+                nav_profile: "Профиль",
+                nav_support: "Помощь",
+                copied_success: "Ключ скопирован!",
+                link_copied_success: "Ссылка скопирована!"
+            },
+            en: {
+                app_title: "VPN",
+                protection_on: "PROTECTION ON",
+                ip_hidden: "Your IP is hidden, traffic is encrypted",
+                network_status: "Network: Stable",
+                copy_active_key: "Copy Active Key",
+                top_up_balance: "Top Up Balance",
+                add_device: "Add Device",
+                tariffs: "Pricing",
+                hit: "HIT",
+                month_1: "1 Month",
+                per_month: "/ mo",
+                locations_count: "+ 5 locations",
+                choose: "Choose",
+                months_6: "6 Months",
+                select_payment_method: "Select Payment Method",
+                card_sbp: "Cards / SBP (RU)",
+                instant_payment: "Instant top-up",
+                crypto_payment: "USDT, TON, BTC",
+                cancel: "Cancel",
+                account_active: "Account Active",
+                main_balance: "Main Balance",
+                bonuses: "Bonuses",
+                my_subscriptions: "My Subscriptions",
+                valid_until_july: "Until July 15, 2026",
+                active: "Active",
+                referral_program: "Referral Program",
+                ref_desc: "Invite friends and get 15% of their top-ups to your bonus account.",
+                copy_link: "Copy Link",
+                promocode: "Promo code",
+                apply: "Apply",
+                support: "Support",
+                faq_1: "How to setup VPN?",
+                faq_1_ans: "Copy the active key on the main page and paste it into V2Ray, Shadowrocket or another supported app.",
+                faq_2: "Internet is not working",
+                faq_2_ans: "Try renewing your subscription in the client app or change the location.",
+                open_support_chat: "Open Support Chat",
+                nav_main: "Main",
+                nav_store: "Store",
+                nav_profile: "Profile",
+                nav_support: "Support",
+                copied_success: "Key copied!",
+                link_copied_success: "Link copied!"
+            }
+        };
+
+        const updateLanguage = () => {
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (dictionary[currentLang][key]) {
+                    el.textContent = dictionary[currentLang][key];
+                }
+            });
+
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-i18n-placeholder');
+                if (dictionary[currentLang][key]) {
+                    el.setAttribute('placeholder', dictionary[currentLang][key]);
+                }
+            });
+
+            document.getElementById('langIndicator').textContent = currentLang === 'ru' ? '🇷🇺 RU' : '🇬🇧 EN';
+        };
+
+        document.getElementById('langToggle').addEventListener('click', () => {
+            triggerHaptic('light');
+            currentLang = currentLang === 'ru' ? 'en' : 'ru';
+            updateLanguage();
+        });
+
+        // Initialize default language
+        updateLanguage();
+
+        // --- Tab Navigation Logic ---
+        const navBtns = document.querySelectorAll('.nav-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        navBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                triggerHaptic('light');
+
+                // Remove active classes
+                navBtns.forEach(b => {
+                    b.classList.remove('text-primary');
+                    b.classList.add('text-slate-500');
+                });
+                tabContents.forEach(content => content.classList.remove('active'));
+
+                // Add active to clicked
+                btn.classList.remove('text-slate-500');
+                btn.classList.add('text-primary');
+
+                const targetId = btn.getAttribute('data-target');
+                document.getElementById(targetId).classList.add('active');
+            });
+        });
+
+        // --- Copy Functions ---
+        const showToast = (message) => {
+            if (tg.showAlert) {
+                 tg.showAlert(message);
+            } else {
+                 alert(message);
+            }
+        };
+
+        document.getElementById('copyKeyBtn').addEventListener('click', () => {
+            triggerHapticSuccess();
+            // Simulate copy
+            navigator.clipboard.writeText("vless://a1b2c3d4-e5f6-7890-abcd-ef1234567890@premium-node.vpn:443");
+            showToast(dictionary[currentLang].copied_success);
+        });
+
+        document.getElementById('copyRefBtn').addEventListener('click', () => {
+            triggerHapticSuccess();
+            navigator.clipboard.writeText("https://t.me/VPNBot?start=ref12345");
+            showToast(dictionary[currentLang].link_copied_success);
+        });
+
+        // --- Bottom Sheet Logic ---
+        const paymentSheet = document.getElementById('paymentSheet');
+        const paymentOverlay = document.getElementById('paymentOverlay');
+        const paymentContent = paymentSheet.querySelector('div:last-child');
+        const closePaymentBtn = document.getElementById('closePaymentBtn');
+        const buyBtns = document.querySelectorAll('.btn-buy');
+
+        const openPaymentSheet = () => {
+            triggerHaptic('medium');
+            paymentSheet.classList.remove('pointer-events-none');
+            paymentOverlay.classList.remove('opacity-0');
+            paymentOverlay.classList.add('opacity-100');
+            paymentContent.classList.remove('translate-y-full');
+        };
+
+        const closePaymentSheet = () => {
+            triggerHaptic('light');
+            paymentOverlay.classList.remove('opacity-100');
+            paymentOverlay.classList.add('opacity-0');
+            paymentContent.classList.add('translate-y-full');
+            setTimeout(() => {
+                paymentSheet.classList.add('pointer-events-none');
+            }, 300); // match transition duration
+        };
+
+        buyBtns.forEach(btn => {
+            btn.addEventListener('click', openPaymentSheet);
+        });
+
+        closePaymentBtn.addEventListener('click', closePaymentSheet);
+        paymentOverlay.addEventListener('click', closePaymentSheet);
+
+        // Buttons generic haptic
+        document.querySelectorAll('button:not(.nav-btn, #copyKeyBtn, #copyRefBtn, .btn-buy, #langToggle)').forEach(btn => {
+            btn.addEventListener('click', () => triggerHaptic('light'));
+        });
+
+    </script>
+</body>
+</html>
