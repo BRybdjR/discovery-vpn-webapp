@@ -14,8 +14,8 @@
             theme: {
                 extend: {
                     colors: {
-                        dark: '#161618', // Deep matte charcoal
-                        darker: '#0F0F10', // Graphite background
+                        dark: '#161618', // Deep matte charcoal block
+                        darker: '#0F0F10', // Graphite solid background
                         primary: '#34C759', // Muted luxury green (Apple style)
                         primaryHover: '#2EAE4E', // Slightly darker green
                         accent: '#FFFFFF', // Pure white accents
@@ -77,6 +77,18 @@
         .toast-animate {
             animation: slideUpFade 3s forwards;
         }
+
+        /* Dev Mode Expand */
+        .dev-mode-content {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease, opacity 0.5s ease;
+        }
+        .dev-mode-content.expanded {
+            max-height: 500px;
+            opacity: 1;
+        }
     </style>
 </head>
 <body class="bg-darker text-slate-50 antialiased selection:bg-primary selection:text-white">
@@ -97,92 +109,63 @@
     <!-- Main Content Container -->
     <main id="app" class="pt-24 px-5 pb-28">
         <!-- MAIN TAB -->
-        <section id="tab-main" class="tab-content active space-y-8">
-            <!-- Minimalist Shield -->
-            <div class="flex flex-col items-center justify-center py-6">
-                <div class="w-28 h-28 rounded-full bg-dark flex items-center justify-center border border-white/10 mb-6">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+        <section id="tab-main" class="tab-content active space-y-6">
+            <!-- Connection Status Card (Interactive Toggle) -->
+            <button id="connectionToggleBtn" class="w-full bg-dark border border-white/5 rounded-2xl p-8 flex flex-col items-center justify-center transition-all hover:bg-white/5 active:scale-[0.98]">
+                <div id="statusDot" class="w-4 h-4 rounded-full bg-primary mb-4 transition-colors duration-300"></div>
+                <h2 id="statusTitle" class="text-2xl font-semibold tracking-tight text-white mb-2" data-i18n="connection_active">Подключение активно</h2>
+                <p id="statusDesc" class="text-slate-400 text-sm font-light" data-i18n="tap_to_disconnect">Нажмите, чтобы отключить</p>
+            </button>
+
+            <!-- VLESS Key Card -->
+            <div class="bg-dark border border-white/5 rounded-2xl p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-sm font-medium text-slate-400" data-i18n="active_protocol">Активный протокол</h3>
+                    <span class="text-xs font-semibold bg-white/10 px-2 py-1 rounded text-white">VLESS</span>
+                </div>
+                <p class="text-lg font-medium text-white truncate mb-6">vless://a1b2c3d4-e5f6-7890-abcd-ef1234567890@premium-node.vpn:443</p>
+
+                <div class="relative rounded-xl overflow-hidden">
+                    <div id="copyFlashOverlay" class="absolute inset-0 bg-white pointer-events-none opacity-0 z-20"></div>
+                    <button id="copyKeyBtn" class="w-full relative z-10 bg-white text-darker font-semibold py-3.5 rounded-xl transition-all hover:bg-slate-200 active:scale-[0.98] flex items-center justify-center space-x-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                        <span data-i18n="copy_key">Скопировать ключ</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Interactive IP Widget -->
+            <button id="ipWidgetBtn" class="w-full bg-dark border border-white/5 rounded-2xl p-6 flex items-center justify-between transition-all hover:bg-white/5 active:scale-[0.98]">
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <div class="text-left">
+                        <p class="text-sm text-slate-400 font-light mb-1" data-i18n="protected_ip">Защищенный IP</p>
+                        <p id="ipAddressDisplay" class="font-medium text-white tracking-wide blur-sm transition-all duration-500">192.168.***.***</p>
+                    </div>
+                </div>
+                <div class="text-slate-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                     </svg>
                 </div>
-                <h2 class="text-xl font-semibold tracking-wide text-primary" data-i18n="protection_on">ЗАЩИТА ВКЛЮЧЕНА</h2>
-                <p class="text-slate-400 mt-2 text-sm font-light" data-i18n="ip_hidden">Ваш IP скрыт, трафик зашифрован</p>
-            </div>
-
-            <!-- Live Widget -->
-            <div class="bg-dark border border-white/5 rounded-2xl p-5 flex items-center justify-between">
-                <div class="flex items-center space-x-4">
-                    <div class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M2 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V5zm3.293 1.293a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 01-1.414-1.414L7.586 10 5.293 7.707a1 1 0 010-1.414zM11 12a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd" />
-                        </svg>
-                    </div>
-                    <div>
-                        <p class="text-sm text-slate-400 font-light" data-i18n="network_status">Сеть: Стабильна</p>
-                        <p class="font-medium text-white">25 <span class="text-xs text-slate-500">Гбит/с</span></p>
-                    </div>
-                </div>
-                <div class="flex space-x-1">
-                    <div class="w-1 h-3 bg-slate-500 rounded-full"></div>
-                    <div class="w-1 h-5 bg-white rounded-full"></div>
-                    <div class="w-1 h-4 bg-slate-400 rounded-full"></div>
-                </div>
-            </div>
-
-            <!-- Copy Key Card -->
-            <div class="relative rounded-2xl overflow-hidden">
-                <div id="copyFlashOverlay" class="absolute inset-0 bg-white pointer-events-none opacity-0 z-20"></div>
-                <button id="copyKeyBtn" class="w-full relative z-10 bg-dark border border-white/5 rounded-2xl p-5 text-left transition-all hover:bg-white/5 active:scale-[0.98]">
-                    <div class="flex justify-between items-center">
-                        <div>
-                            <h3 class="text-base font-medium text-white mb-1" data-i18n="copy_active_key">Скопировать активный ключ</h3>
-                            <p class="text-xs text-slate-500 font-mono truncate max-w-[200px]">vless://a1b2c3d4... Premium Node</p>
-                        </div>
-                        <div class="text-slate-400">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                            </svg>
-                        </div>
-                    </div>
-                </button>
-            </div>
-
-            <!-- Quick Actions -->
-            <div class="grid grid-cols-2 gap-4">
-                <button class="bg-dark border border-white/5 rounded-2xl p-5 flex flex-col items-center justify-center space-y-3 hover:bg-white/5 transition-colors active:scale-[0.98]">
-                    <div class="text-white">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                        </svg>
-                    </div>
-                    <span class="text-sm font-medium text-slate-300" data-i18n="top_up_balance">Пополнить баланс</span>
-                </button>
-                <button class="bg-dark border border-white/5 rounded-2xl p-5 flex flex-col items-center justify-center space-y-3 hover:bg-white/5 transition-colors active:scale-[0.98]">
-                    <div class="text-white">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                        </svg>
-                    </div>
-                    <span class="text-sm font-medium text-slate-300" data-i18n="add_device">Добавить устройство</span>
-                </button>
-            </div>
+            </button>
         </section>
 
         <!-- STORE TAB -->
         <section id="tab-store" class="tab-content space-y-6">
             <h2 class="text-2xl font-semibold tracking-tight text-white mb-6" data-i18n="tariffs">Тарифы</h2>
 
-            <!-- Category Filter -->
-            <div class="flex space-x-2 overflow-x-auto pb-2 scrollbar-hide">
-                <button class="bg-white text-darker px-5 py-2 rounded-full text-sm font-semibold whitespace-nowrap active:scale-[0.98] transition-transform">VLESS</button>
-                <button class="bg-dark border border-white/10 text-slate-300 px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap hover:bg-white/5 active:scale-[0.98] transition-all">WireGuard</button>
-                <button class="bg-dark border border-white/10 text-slate-300 px-5 py-2 rounded-full text-sm font-medium whitespace-nowrap hover:bg-white/5 active:scale-[0.98] transition-all">ShadowSocks</button>
-            </div>
-
             <!-- Tariffs List -->
-            <div class="space-y-4 mt-4">
+            <div class="space-y-4">
                 <!-- Tariff Card 1 -->
-                <div class="bg-dark border border-white/10 rounded-3xl p-6 relative overflow-hidden transition-all hover:border-white/20">
+                <div class="bg-dark border border-white/5 rounded-2xl p-6 relative overflow-hidden transition-all hover:bg-white/5">
                     <div class="absolute top-0 right-0 bg-white text-darker text-xs font-bold px-4 py-1.5 rounded-bl-2xl tracking-wide" data-i18n="hit">ХИТ</div>
                     <h3 class="text-lg font-medium text-slate-300 mb-2" data-i18n="month_1">1 Месяц</h3>
                     <div class="flex items-end space-x-1.5 mb-6">
@@ -197,11 +180,11 @@
                         <span class="text-slate-500 ml-2 font-medium" data-i18n="locations_count">+ 5 локаций</span>
                     </div>
 
-                    <button class="w-full bg-white hover:bg-slate-200 text-darker font-semibold py-3.5 rounded-2xl transition-colors active:scale-[0.98] btn-buy" data-price="149" data-i18n="choose">Выбрать</button>
+                    <button class="w-full bg-white hover:bg-slate-200 text-darker font-semibold py-3.5 rounded-xl transition-colors active:scale-[0.98] btn-buy" data-price="149" data-i18n="choose">Выбрать</button>
                 </div>
 
                 <!-- Tariff Card 2 -->
-                <div class="bg-dark border border-white/10 rounded-3xl p-6 relative overflow-hidden transition-all hover:border-white/20">
+                <div class="bg-dark border border-white/5 rounded-2xl p-6 relative overflow-hidden transition-all hover:bg-white/5">
                     <h3 class="text-lg font-medium text-slate-300 mb-2" data-i18n="months_6">6 Месяцев</h3>
                     <div class="flex items-end space-x-1.5 mb-6">
                         <span class="text-4xl font-semibold text-white tracking-tight">799 ₽</span>
@@ -215,7 +198,7 @@
                         <span class="text-slate-500 ml-2 font-medium" data-i18n="locations_count">+ 5 локаций</span>
                     </div>
 
-                    <button class="w-full bg-transparent border border-white/20 text-white hover:bg-white/5 font-semibold py-3.5 rounded-2xl transition-colors active:scale-[0.98] btn-buy" data-price="799" data-i18n="choose">Выбрать</button>
+                    <button class="w-full bg-transparent border border-white/20 text-white hover:bg-white/5 font-semibold py-3.5 rounded-xl transition-colors active:scale-[0.98] btn-buy" data-price="799" data-i18n="choose">Выбрать</button>
                 </div>
             </div>
         </section>
@@ -230,7 +213,7 @@
                     </svg>
                 </div>
                 <div>
-                    <h2 class="text-xl font-semibold tracking-tight text-white">User #12345</h2>
+                    <h2 id="userIdElement" class="text-xl font-semibold tracking-tight text-white cursor-pointer active:opacity-70 transition-opacity">User #12345</h2>
                     <div class="flex items-center space-x-1.5 mt-1">
                         <div class="w-1.5 h-1.5 bg-primary rounded-full"></div>
                         <p class="text-sm text-slate-400 font-medium" data-i18n="account_active">Аккаунт активен</p>
@@ -310,6 +293,42 @@
                     <button class="bg-white text-darker px-4 py-2 rounded-xl text-sm font-semibold hover:bg-slate-200 transition-colors" data-i18n="apply">Ок</button>
                 </div>
             </div>
+
+            <!-- Hidden Developer Mode Section -->
+            <div id="devModeSection" class="dev-mode-content bg-dark border border-dashed border-white/20 rounded-2xl mt-6 p-5">
+                <div class="flex items-center justify-between mb-4 border-b border-white/10 pb-3">
+                    <h3 class="text-sm font-semibold text-white tracking-widest uppercase">Developer Mode</h3>
+                    <div class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center text-xs">
+                        <span class="text-slate-500">Core Engine</span>
+                        <span class="text-white font-mono">Xray-core 1.8.4</span>
+                    </div>
+
+                    <div class="bg-white/5 p-3 rounded-xl border border-white/5">
+                        <div class="flex justify-between text-xs mb-1">
+                            <span class="text-slate-400">Ping (ams-01.premium)</span>
+                            <span class="text-white font-mono">24ms</span>
+                        </div>
+                        <div class="w-full bg-darker rounded-full h-1.5 overflow-hidden">
+                            <div class="bg-primary h-1.5 rounded-full" style="width: 15%"></div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3 text-center">
+                        <div class="bg-white/5 p-3 rounded-xl border border-white/5">
+                            <p class="text-[10px] text-slate-500 uppercase tracking-wider mb-1">TX/RX</p>
+                            <p class="text-white font-mono text-sm">4.2 GB</p>
+                        </div>
+                        <div class="bg-white/5 p-3 rounded-xl border border-white/5">
+                            <p class="text-[10px] text-slate-500 uppercase tracking-wider mb-1">Uptime</p>
+                            <p class="text-white font-mono text-sm">14d 2h</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </section>
 
         <!-- SUPPORT TAB -->
@@ -324,7 +343,7 @@
                             <svg fill="none" height="20" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24" width="20"><path d="M6 9l6 6 6-6"></path></svg>
                         </span>
                     </summary>
-                    <div class="text-slate-400 p-5 pt-0 text-sm border-t border-white/5 font-light leading-relaxed" data-i18n="faq_1_ans">
+                    <div class="text-slate-400 p-5 pt-0 text-sm border-t border-white/5 font-light leading-relaxed mt-2" data-i18n="faq_1_ans">
                         Скопируйте активный ключ на главной странице и вставьте его в приложение V2Ray, Shadowrocket или другое поддерживаемое приложение.
                     </div>
                 </details>
@@ -336,7 +355,7 @@
                             <svg fill="none" height="20" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24" width="20"><path d="M6 9l6 6 6-6"></path></svg>
                         </span>
                     </summary>
-                    <div class="text-slate-400 p-5 pt-0 text-sm border-t border-white/5 font-light leading-relaxed" data-i18n="faq_2_ans">
+                    <div class="text-slate-400 p-5 pt-0 text-sm border-t border-white/5 font-light leading-relaxed mt-2" data-i18n="faq_2_ans">
                         Попробуйте обновить подписку в приложении клиента или сменить локацию.
                     </div>
                 </details>
@@ -604,6 +623,83 @@
                 const targetId = btn.getAttribute('data-target');
                 document.getElementById(targetId).classList.add('active');
             });
+        });
+
+        // --- Interactive Connection Toggle ---
+        const connectionToggleBtn = document.getElementById('connectionToggleBtn');
+        const statusDot = document.getElementById('statusDot');
+        const statusTitle = document.getElementById('statusTitle');
+        const statusDesc = document.getElementById('statusDesc');
+        let isConnected = true;
+
+        connectionToggleBtn.addEventListener('click', () => {
+            isConnected = !isConnected;
+
+            if (isConnected) {
+                // Haptic Pulse for connection
+                if (tg.HapticFeedback) {
+                    tg.HapticFeedback.impactOccurred('medium');
+                    setTimeout(() => tg.HapticFeedback.notificationOccurred('success'), 150);
+                }
+
+                statusDot.classList.remove('bg-slate-500');
+                statusDot.classList.add('bg-primary');
+                statusTitle.textContent = currentLang === 'ru' ? 'Подключение активно' : 'Connection Active';
+                statusDesc.textContent = currentLang === 'ru' ? 'Нажмите, чтобы отключить' : 'Tap to disconnect';
+            } else {
+                triggerHaptic('light');
+                statusDot.classList.remove('bg-primary');
+                statusDot.classList.add('bg-slate-500');
+                statusTitle.textContent = currentLang === 'ru' ? 'Подключение остановлено' : 'Connection Stopped';
+                statusDesc.textContent = currentLang === 'ru' ? 'Нажмите, чтобы включить' : 'Tap to connect';
+            }
+        });
+
+        // --- Interactive IP Widget ---
+        const ipWidgetBtn = document.getElementById('ipWidgetBtn');
+        const ipAddressDisplay = document.getElementById('ipAddressDisplay');
+        let isIpRevealed = false;
+
+        ipWidgetBtn.addEventListener('click', () => {
+            triggerHaptic('light');
+            isIpRevealed = !isIpRevealed;
+            if (isIpRevealed) {
+                ipAddressDisplay.classList.remove('blur-sm');
+                ipAddressDisplay.textContent = '192.168.144.205';
+            } else {
+                ipAddressDisplay.classList.add('blur-sm');
+                ipAddressDisplay.textContent = '192.168.***.***';
+            }
+        });
+
+        // --- Developer Mode Logic ---
+        const userIdElement = document.getElementById('userIdElement');
+        const devModeSection = document.getElementById('devModeSection');
+        let tapCount = 0;
+        let tapTimer;
+
+        userIdElement.addEventListener('click', () => {
+            tapCount++;
+            triggerHaptic('light');
+
+            clearTimeout(tapTimer);
+            tapTimer = setTimeout(() => {
+                tapCount = 0;
+            }, 1000); // 1 second to do 5 taps
+
+            if (tapCount >= 5) {
+                tapCount = 0;
+                // Firm haptic confirmation
+                triggerHaptic('heavy');
+
+                const isExpanded = devModeSection.classList.contains('expanded');
+                if (isExpanded) {
+                    devModeSection.classList.remove('expanded');
+                } else {
+                    devModeSection.classList.add('expanded');
+                    showToast(currentLang === 'ru' ? 'Режим разработчика активирован' : 'Developer Mode Activated');
+                }
+            }
         });
 
         // --- Copy Functions ---
